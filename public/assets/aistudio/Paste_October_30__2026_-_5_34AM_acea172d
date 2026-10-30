@@ -1,0 +1,962 @@
+# D'CALABASH HOTEL – COMPLETE WEBSITE DEVELOPMENT MASTER PROMPT
+
+## PROJECT OVERVIEW
+
+Develop a premium, modern, responsive hospitality website and reservation management platform for D'Calabash Hotel, located in Congo Town Back Road, Monrovia, Liberia.
+
+The website must represent two primary business operations:
+
+1. Hotel accommodation and guest services.
+2. Restaurant, dining and food services.
+
+Both operations must be fully integrated into one website with separate reservation workflows and a shared administrative backend.
+
+This is a production-oriented project, not a static demonstration website.
+
+The application must have a functional frontend, connected Supabase database, authentication, image storage, administrative dashboard and working reservation workflows.
+
+## 1. BUSINESS INFORMATION
+
+Business Name: D'Calabash Hotel
+
+Location: Congo Town Back Road, Monrovia, Liberia, 231.
+
+Telephone: +231 77 763 7559
+
+Email: admin@dcalabashhotel.co
+
+Facebook:
+https://www.facebook.com/share/1fCqL8ELkw/?mibextid=wwXIfr
+
+Instagram:
+https://www.instagram.com/dcalabashhotel
+
+Brand Tagline:
+"Your Best Experience is Guaranteed."
+
+Use the supplied official D'Calabash Hotel logo as the primary brand asset.
+
+Do not redesign, distort or replace the official logo with an AI-generated alternative.
+
+Use the supplied screenshots and social media pages as references for understanding the business.
+
+IMPORTANT:
+Do not invent room categories, room prices, hotel facilities, restaurant menu items, food prices, business hours or operational policies. Create manageable placeholder content where information is unavailable, and clearly identify it as draft content requiring administrator approval.
+
+## 2. TECHNOLOGY STACK
+
+Build using:
+
+- Frontend: React and TypeScript.
+- Build tool: Vite.
+- Styling: Tailwind CSS.
+- UI components: Reusable, accessible components.
+- Backend: Supabase.
+- Database: PostgreSQL.
+- Authentication: Supabase Auth.
+- File storage: Supabase Storage.
+- Hosting: Vercel.
+- Source control: GitHub.
+
+Use environment variables for all credentials and sensitive configuration.
+
+Never expose Supabase service-role keys, secret API keys or payment credentials in frontend code.
+
+Provide a properly structured project with reusable components, clear naming conventions and maintainable code.
+
+## 3. BRANDING AND DESIGN SYSTEM
+
+Create a sophisticated hospitality identity based on the existing D'Calabash logo.
+
+Colour direction:
+
+- Deep forest green.
+- Rich gold.
+- Warm ivory.
+- White.
+- Charcoal.
+- Subtle orange and earth-tone accents.
+
+Design requirements:
+
+- Premium hospitality appearance.
+- Elegant typography.
+- High-quality photography.
+- Spacious layouts.
+- Smooth transitions and subtle animations.
+- Attractive buttons and interactive cards.
+- Consistent iconography.
+- Responsive mobile navigation.
+- Accessible colour contrast.
+- Fast-loading pages.
+
+The website must work exceptionally well on smartphones, tablets and desktops.
+
+Avoid excessive animation, cluttered layouts and generic template styling.
+
+Use actual uploaded business photographs wherever available. Where photographs are unavailable, use tasteful temporary images that can be replaced through the admin dashboard.
+
+## 4. PUBLIC WEBSITE PAGES
+
+Create the following pages:
+
+### A. HOME PAGE
+
+Include:
+
+1. Premium hero section with high-quality hotel imagery.
+2. Official D'Calabash Hotel logo.
+3. Tagline.
+4. Clear introduction to the hotel.
+5. Prominent Hotel Booking button.
+6. Prominent Restaurant Reservation button.
+7. Accommodation highlights.
+8. Restaurant and dining highlights.
+9. Featured menu items.
+10. Hotel and restaurant gallery.
+11. Special offers.
+12. Guest testimonials.
+13. Google review integration or a link to the Google business profile.
+14. Location and contact information.
+15. Social media links.
+16. Footer with complete business information.
+
+The hero section should immediately communicate that D'Calabash offers both accommodation and dining.
+
+### B. ABOUT US
+
+Include:
+
+- Hotel background.
+- Business history.
+- Mission and vision.
+- Hospitality philosophy.
+- Guest experience.
+- Restaurant introduction.
+
+All text must be editable through the administration dashboard.
+
+### C. ACCOMMODATION
+
+Create an accommodation listing page.
+
+Each room category should support:
+
+- Room name.
+- Room description.
+- Main photograph.
+- Additional photographs.
+- Room amenities.
+- Maximum occupancy.
+- Bed configuration.
+- Number of rooms in the category.
+- Published nightly rate.
+- Promotional rate, where applicable.
+- Availability.
+- Booking button.
+
+Create individual room-detail pages.
+
+Allow the administrator to add, edit, deactivate and delete room categories and individual rooms.
+
+Do not assume all rooms have identical prices or facilities.
+
+### D. RESTAURANT
+
+Create a dedicated restaurant page with:
+
+- Restaurant introduction.
+- Dining atmosphere.
+- Food photography.
+- Food categories.
+- Featured meals.
+- Opening hours.
+- Table reservation button.
+- Menu browsing.
+
+### E. DIGITAL FOOD MENU
+
+Create a professional digital menu.
+
+Organise items into administrator-managed categories, such as:
+
+- Starters.
+- Main dishes.
+- Local Liberian cuisine.
+- International dishes.
+- Seafood.
+- Beverages.
+- Desserts.
+
+These are suggested categories, not confirmed menu offerings.
+
+Each menu item must support:
+
+- Item name.
+- Description.
+- Price.
+- Photograph.
+- Category.
+- Availability status.
+- Featured item status.
+- Dietary or allergen information where supplied.
+
+Allow administrators to update prices and menu availability without modifying code.
+
+### F. GALLERY
+
+Create a filterable image gallery with categories:
+
+- Hotel exterior.
+- Rooms.
+- Restaurant.
+- Food and beverages.
+- Events.
+- Guest experiences.
+
+Images must be uploaded through Supabase Storage and managed through the dashboard.
+
+### G. EVENTS AND SPECIAL OFFERS
+
+Create sections for:
+
+- Private functions.
+- Celebrations.
+- Corporate events.
+- Hotel packages.
+- Restaurant promotions.
+- Seasonal offers.
+
+Allow enquiries and promotional content to be managed from the dashboard.
+
+### H. CONTACT PAGE
+
+Display:
+
+Telephone: +231 77 763 7559
+
+Email: admin@dcalabashhotel.co
+
+Address: Congo Town Back Road, Monrovia, Liberia.
+
+Include:
+
+- WhatsApp contact button.
+- Google Maps location.
+- Facebook.
+- Instagram.
+- Contact enquiry form.
+
+Validate submitted forms and store enquiries securely in Supabase.
+
+## 5. HOTEL RESERVATION ENGINE
+
+Develop a functional online hotel reservation system.
+
+### Customer booking process
+
+Step 1: Select check-in date.
+
+Step 2: Select check-out date.
+
+Step 3: Select number of adults and children.
+
+Step 4: Select number of rooms.
+
+Step 5: Search available room categories.
+
+Step 6: Display available rooms, photographs, facilities and nightly rates.
+
+Step 7: Select preferred room category and quantity.
+
+Step 8: Enter guest details.
+
+Step 9: Display the booking summary and total estimated cost.
+
+Step 10: Submit reservation.
+
+Step 11: Generate a unique booking reference.
+
+Step 12: Display a booking confirmation or pending confirmation message, depending on the configured booking policy.
+
+### Required guest information
+
+- Full name.
+- Email address.
+- Telephone number.
+- Country of residence.
+- Number of guests.
+- Check-in date.
+- Check-out date.
+- Special requests.
+
+### Hotel reservation management
+
+The system must:
+
+- Check actual room inventory.
+- Prevent overlapping confirmed reservations from exceeding available inventory.
+- Account for maintenance and blocked rooms.
+- Calculate the correct number of nights.
+- Calculate room charges.
+- Support configurable taxes and additional fees.
+- Store booking records.
+- Generate unique booking references.
+- Send booking notifications.
+- Support booking modifications.
+- Support cancellation workflows.
+- Track booking and payment statuses.
+
+Use database transactions or equivalent concurrency-safe database operations to prevent double bookings.
+
+Do not rely exclusively on frontend availability checks.
+
+### Hotel availability calendar
+
+Develop an administrative calendar displaying:
+
+- Available rooms.
+- Reserved rooms.
+- Occupied rooms.
+- Maintenance blocks.
+- Expected arrivals.
+- Expected departures.
+
+Allow authorised staff to create reservations manually.
+
+## 6. RESTAURANT RESERVATION ENGINE
+
+Develop a separate restaurant reservation system.
+
+### Customer booking process
+
+1. Select preferred dining date.
+2. Select available reservation time.
+3. Select number of guests.
+4. Select seating preference where supported.
+5. Enter guest information.
+6. Add special requests.
+7. Review reservation details.
+8. Submit reservation.
+9. Receive a unique reservation reference.
+
+### Restaurant reservation functionality
+
+Support:
+
+- Table management.
+- Table capacity.
+- Combined tables where required.
+- Seating arrangements.
+- Reservation time slots.
+- Operating hours.
+- Reservation limits.
+- Booking confirmation.
+- Cancellation.
+- Modification.
+- Walk-in reservations entered by staff.
+- No-show tracking.
+
+Prevent overbooking based on actual restaurant seating capacity.
+
+Allow the administrator to configure reservation intervals and maximum party sizes.
+
+Do not display seating options that the restaurant has not configured.
+
+### Restaurant dashboard
+
+Include:
+
+- Today's reservations.
+- Upcoming reservations.
+- Guest names.
+- Party sizes.
+- Reservation times.
+- Table assignments.
+- Special requests.
+- Booking status.
+
+## 7. WHATSAPP AND TELEPHONE INTEGRATION
+
+Integrate WhatsApp throughout the website.
+
+Use the business telephone number:
+
++231 77 763 7559
+
+Create a floating WhatsApp button.
+
+Provide dedicated WhatsApp enquiry buttons for:
+
+- Hotel room enquiries.
+- Room availability.
+- Restaurant reservations.
+- Food menu enquiries.
+- Events.
+- General enquiries.
+
+Where possible, generate pre-filled WhatsApp messages containing the customer's selected dates, room category or reservation details.
+
+Use the international WhatsApp format for the telephone number.
+
+Allow customers to contact the business directly without completing an online reservation.
+
+IMPORTANT:
+
+WhatsApp enquiries must not automatically become confirmed reservations.
+
+Provide a dashboard function for staff to record WhatsApp and telephone enquiries as bookings.
+
+Staff must verify availability before confirming these bookings.
+
+## 8. ADMINISTRATIVE DASHBOARD
+
+Create a secure administrative portal.
+
+Use a separate protected route such as:
+
+/admin
+
+The dashboard must not be accessible to unauthorised visitors.
+
+### A. Dashboard overview
+
+Display:
+
+- Total hotel reservations.
+- Pending hotel reservations.
+- Confirmed hotel reservations.
+- Current occupancy.
+- Upcoming arrivals.
+- Expected departures.
+- Restaurant reservations.
+- Today's restaurant bookings.
+- Pending enquiries.
+- Revenue indicators.
+
+All figures must be calculated from actual database records.
+
+Do not populate production analytics with fabricated figures.
+
+### B. Room management
+
+Allow administrators to:
+
+- Add room categories.
+- Add individual rooms.
+- Upload photographs.
+- Edit descriptions.
+- Manage amenities.
+- Set occupancy limits.
+- Set room rates.
+- Manage room availability.
+- Block rooms.
+- Manage maintenance periods.
+
+### C. Hotel booking management
+
+Allow authorised users to:
+
+- View all bookings.
+- Search bookings.
+- Filter by dates and status.
+- Create manual reservations.
+- Confirm reservations.
+- Modify reservations.
+- Cancel reservations.
+- Record check-in.
+- Record check-out.
+- Record payment information.
+- View guest booking history.
+
+### D. Restaurant menu management
+
+Allow administrators to:
+
+- Create food categories.
+- Add menu items.
+- Upload photographs.
+- Edit descriptions.
+- Change prices.
+- Mark items available or unavailable.
+- Feature selected dishes.
+- Organise menu categories.
+
+### E. Restaurant booking management
+
+Allow staff to:
+
+- View reservations.
+- Assign tables.
+- Modify bookings.
+- Cancel reservations.
+- Record walk-ins.
+- Mark guests as seated.
+- Complete reservations.
+- Record no-shows.
+
+### F. Website content management
+
+Allow authorised administrators to update:
+
+- Homepage banners.
+- About Us content.
+- Accommodation descriptions.
+- Restaurant descriptions.
+- Contact information.
+- Gallery photographs.
+- Promotions.
+- Testimonials.
+- Events.
+- Social media links.
+
+### G. Reports
+
+Provide:
+
+- Hotel reservation reports.
+- Room occupancy reports.
+- Arrival and departure reports.
+- Restaurant reservation reports.
+- Booking cancellation reports.
+- Revenue reports based on recorded transactions.
+- Customer booking history.
+
+Provide date filtering and export to CSV where appropriate.
+
+## 9. DATABASE ARCHITECTURE – SUPABASE
+
+Design a properly normalised PostgreSQL database.
+
+Create tables for:
+
+### Shared tables
+
+- profiles
+- user_roles
+- customers
+- enquiries
+- notifications
+- payments
+- promotions
+- reviews
+- events
+- gallery_images
+- website_content
+- business_settings
+- audit_logs
+
+### Hotel tables
+
+- room_categories
+- rooms
+- room_amenities
+- room_category_amenities
+- room_rates
+- room_rate_periods
+- hotel_bookings
+- hotel_booking_rooms
+- room_blocks
+
+### Restaurant tables
+
+- menu_categories
+- menu_items
+- restaurant_tables
+- restaurant_reservations
+- restaurant_operating_hours
+- restaurant_availability
+
+Define appropriate:
+
+- Primary keys.
+- Foreign keys.
+- Unique constraints.
+- Indexes.
+- Check constraints.
+- Database functions.
+- Database triggers where necessary.
+
+Use UUID identifiers where appropriate.
+
+Use timestamps and appropriate timezone handling.
+
+Store reservation dates and times consistently, with the hotel's local timezone configurable as Africa/Monrovia.
+
+Use appropriate decimal types for monetary values.
+
+Do not use floating-point numbers for financial calculations.
+
+### Currency configuration
+
+Support configurable pricing in:
+
+- USD.
+- Liberian Dollars (LRD).
+
+Do not hardcode an exchange rate.
+
+Allow the administrator to configure the business's preferred display currency and exchange rate if multi-currency conversion is enabled.
+
+Preserve original transaction currencies.
+
+### Reservation integrity
+
+Implement database-level safeguards against:
+
+- Double room allocation.
+- Overlapping confirmed reservations exceeding room inventory.
+- Restaurant table overbooking.
+- Invalid check-in and check-out dates.
+- Invalid guest quantities.
+- Duplicate booking references.
+
+Use secure database functions for critical booking operations.
+
+## 10. SECURITY AND ACCESS CONTROL
+
+Implement Supabase Row Level Security on all sensitive tables.
+
+Define role-based permissions for:
+
+- Super Administrator.
+- Hotel Manager.
+- Restaurant Manager.
+- Receptionist.
+- Restaurant Staff.
+
+Ensure:
+
+- Public users can only access published website content.
+- Customers cannot view other customers' private information.
+- Staff can only access information permitted by their assigned roles.
+- Sensitive financial information is restricted.
+- Administrative actions are logged.
+- Passwords are managed through Supabase Auth.
+- Protected routes validate authentication and authorisation.
+- API secrets are never exposed in browser code.
+
+Do not depend on hiding frontend buttons as a security measure.
+
+Enforce permissions at the database and backend levels.
+
+## 11. EMAIL AND NOTIFICATION SYSTEM
+
+Develop an email notification system.
+
+Support notifications for:
+
+Hotel:
+- New reservation received.
+- Reservation confirmation.
+- Reservation modification.
+- Reservation cancellation.
+- Upcoming arrival.
+
+Restaurant:
+- New reservation received.
+- Reservation confirmation.
+- Reservation modification.
+- Reservation cancellation.
+
+Administrative:
+- New hotel reservation.
+- New restaurant reservation.
+- New enquiry.
+- Cancellation request.
+
+Use a suitable transactional email provider configured through secure environment variables.
+
+Create notification templates with the official hotel branding.
+
+Provide graceful error handling if an email provider is not configured.
+
+Do not display a message claiming an email was sent unless delivery has been successfully handed off to the configured service.
+
+## 12. PAYMENT ARCHITECTURE
+
+Design the system to support future online payments.
+
+Include a payment module that can accommodate approved payment providers operating in Liberia.
+
+Support:
+
+- Payment reference.
+- Booking reference.
+- Amount.
+- Currency.
+- Payment method.
+- Payment status.
+- Transaction reference.
+- Payment date.
+- Refund information.
+
+Provide manual payment recording for cash, bank transfer and other administrator-approved methods.
+
+Do not invent payment gateway credentials or claim that online payments are operational before a provider has been selected, integrated and tested.
+
+Allow the business to configure deposits, full payments and balance payments.
+
+Payment status must remain separate from reservation status.
+
+## 13. SUPABASE STORAGE
+
+Create organised storage buckets for:
+
+- hotel-logo
+- hotel-gallery
+- room-images
+- restaurant-images
+- menu-images
+- promotional-images
+- event-images
+
+Configure appropriate storage policies.
+
+Allow authorised staff to upload, replace and remove images through the dashboard.
+
+Optimise images for web display.
+
+Generate responsive image sizes and use lazy loading where appropriate.
+
+## 14. SEARCH ENGINE OPTIMISATION
+
+Optimise the website for searches such as:
+
+- D'Calabash Hotel Liberia.
+- Hotels in Monrovia.
+- Hotels in Congo Town Liberia.
+- Restaurants in Monrovia.
+- Restaurant in Congo Town.
+- Accommodation in Monrovia.
+
+Implement:
+
+- Page-specific SEO titles.
+- Meta descriptions.
+- Open Graph images.
+- Canonical URLs.
+- XML sitemap.
+- Robots.txt.
+- Structured data.
+- Local business information.
+- Hotel and restaurant schema where applicable.
+- Descriptive image alt text.
+
+Ensure the official logo and suitable branded social-sharing image appear when the website URL is shared on WhatsApp, Facebook and other platforms.
+
+Create appropriate favicon and website display images based on the supplied official logo.
+
+Do not fabricate ratings, reviews or business claims.
+
+## 15. SOCIAL MEDIA INTEGRATION
+
+Connect the official Facebook and Instagram profiles.
+
+Provide:
+
+- Facebook icon and link.
+- Instagram icon and link.
+- Social sharing functionality.
+- Instagram gallery or embedded feed where authorised.
+
+If the Instagram API requires credentials or account permissions, provide the required integration setup.
+
+Do not simulate a live Instagram feed using manually generated posts.
+
+Provide a fallback gallery that administrators can update.
+
+## 16. CUSTOMER EXPERIENCE
+
+Create a polished booking experience with:
+
+- Clear calls to action.
+- Easy navigation.
+- Fast-loading pages.
+- Responsive forms.
+- Date pickers.
+- Booking summaries.
+- Clear confirmation messages.
+- Helpful error messages.
+- Accessible interfaces.
+
+Provide customers with their reservation reference after submission.
+
+Allow customers to enquire about their reservation using their booking reference and appropriate verification.
+
+Do not expose private booking information through publicly guessable booking URLs.
+
+## 17. WEBSITE PERFORMANCE
+
+Optimise for users accessing the website through mobile networks in Liberia.
+
+Requirements:
+
+- Optimised image delivery.
+- Lazy loading.
+- Minimal unnecessary JavaScript.
+- Responsive image formats.
+- Efficient database queries.
+- Caching of public content.
+- Loading indicators.
+- Error boundaries.
+- Form validation.
+- Mobile-first development.
+
+The website must remain usable on slower internet connections.
+
+## 18. GITHUB AND VERCEL DEPLOYMENT
+
+Prepare the project for GitHub integration and Vercel deployment.
+
+Provide:
+
+- Clean project structure.
+- README documentation.
+- Environment variable documentation.
+- Supabase migration files.
+- Database setup instructions.
+- Storage bucket setup instructions.
+- Deployment instructions.
+- Production build configuration.
+- Error-handling documentation.
+
+Prepare environment variables for:
+
+VITE_SUPABASE_URL
+
+VITE_SUPABASE_ANON_KEY
+
+SUPABASE_SERVICE_ROLE_KEY (server-side only)
+
+Transactional email configuration.
+
+Payment provider configuration, when selected.
+
+Any additional integration credentials.
+
+IMPORTANT:
+
+Google AI Studio must not invent or fabricate actual Supabase credentials.
+
+Provide the required variable names and explain where to retrieve each value from the Supabase dashboard.
+
+Use the Supabase publishable key where appropriate for new Supabase configurations, while maintaining compatibility with the project's selected client setup.
+
+Never expose secret keys through VITE_ prefixed frontend variables.
+
+## 19. DEVELOPMENT WORKFLOW
+
+Develop the application in controlled phases.
+
+PHASE 1 – FOUNDATION
+- Establish the React and TypeScript project.
+- Create the design system.
+- Implement responsive navigation.
+- Create the public website structure.
+- Integrate the official logo.
+
+PHASE 2 – SUPABASE
+- Configure Supabase.
+- Create database migrations.
+- Implement authentication.
+- Create database relationships.
+- Configure Row Level Security.
+- Configure storage buckets.
+
+PHASE 3 – HOTEL MODULE
+- Develop room management.
+- Develop availability calculations.
+- Develop hotel reservation workflows.
+- Implement booking references.
+- Implement booking administration.
+
+PHASE 4 – RESTAURANT MODULE
+- Develop the menu.
+- Develop restaurant table management.
+- Develop reservation availability.
+- Implement restaurant booking workflows.
+- Implement reservation administration.
+
+PHASE 5 – ADMIN DASHBOARD
+- Build role-based dashboard.
+- Implement content management.
+- Implement reporting.
+- Implement notification management.
+
+PHASE 6 – INTEGRATIONS
+- WhatsApp.
+- Transactional email.
+- Google Maps.
+- Social media.
+- Payment integration when approved.
+
+PHASE 7 – TESTING AND DEPLOYMENT
+- Test mobile responsiveness.
+- Test all forms.
+- Test database operations.
+- Test booking conflicts.
+- Test security and access control.
+- Test all administrative functions.
+- Prepare GitHub repository.
+- Deploy to Vercel.
+
+## 20. QUALITY ASSURANCE AND ACCEPTANCE CRITERIA
+
+Do not consider the project complete until the following have been tested:
+
+1. The homepage loads correctly.
+2. The official logo displays properly.
+3. All navigation links work.
+4. Accommodation categories can be created and edited.
+5. Room photographs upload successfully.
+6. Room availability is calculated correctly.
+7. Overlapping bookings cannot exceed inventory.
+8. Hotel reservations are stored in Supabase.
+9. Restaurant menu items can be created and edited.
+10. Menu prices update correctly.
+11. Restaurant reservations are stored in Supabase.
+12. Restaurant capacity restrictions work.
+13. WhatsApp enquiry links work.
+14. Contact forms submit successfully.
+15. Admin authentication works.
+16. Role-based access restrictions work.
+17. Unauthorised users cannot access protected information.
+18. Email notifications work when configured.
+19. Website content can be updated without editing source code.
+20. The website works on mobile, tablet and desktop.
+21. Production deployment works.
+22. No critical errors remain in the browser console or server logs.
+
+Create automated tests for critical booking, availability, authentication and permission logic.
+
+Provide a final implementation report identifying completed features, outstanding integrations and any configuration still required from the hotel management.
+
+## 21. FINAL DEVELOPMENT INSTRUCTION
+
+Build D'Calabash Hotel into a premium, professional and fully functional digital hospitality platform.
+
+Prioritise:
+
+- Brand consistency.
+- Excellent customer experience.
+- Reliable reservations.
+- Secure administration.
+- Accurate availability.
+- Ease of updating business information.
+- Performance on mobile networks.
+- Long-term scalability.
+
+Do not simply generate attractive screens.
+
+Connect every functional interface to its appropriate backend operation.
+
+Do not create fake functionality, dummy booking confirmations, fabricated payment success messages or simulated database records in production.
+
+Where business information or credentials are unavailable, create clearly labelled configuration fields and explain what the owner must supply.
+
+Work incrementally, preserve existing working functionality and report errors rather than silently bypassing them.
+
+The finished website must allow customers to discover D'Calabash Hotel, explore accommodation, browse the restaurant menu, make reservations online or contact the business through WhatsApp, while giving management complete control over the website and its reservation operations.
+
+**PROJECT BRAND PROMISE: D'CALABASH HOTEL – YOUR BEST EXPERIENCE IS GUARANTEED.**

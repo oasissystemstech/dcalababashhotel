@@ -1,0 +1,6 @@
+{
+  "name": "D'Calabash Hotel & Restaurant",
+  "description": "Official hospitality and reservation platform for D'Calabash Hotel in Congo Town, Monrovia, Liberia. Luxury accommodation, premier dining, and online reservations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
