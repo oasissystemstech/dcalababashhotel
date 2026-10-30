@@ -33,7 +33,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const currentLogo = settings.logoUrl || HOTEL_INFO.logoUrl;
 
   return (
-    <header className="sticky top-0 z-50 bg-[#FAF8F5]/95 backdrop-blur-md border-b border-[#0F3827]/10 transition-colors">
+    <header className="sticky top-0 z-50 bg-[#FAF8F5] border-b border-[#0F3827]/10 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-colors">
       {/* Top micro-bar for quick contact and currency */}
       <div className="hidden lg:block bg-[#0F3827] text-white text-xs py-1.5 px-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -84,12 +84,14 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center justify-between gap-8">
           {/* Zone 1: Single text element wordmark + Official Brand Logo */}
           <a href="#" className="flex items-center gap-3 shrink-0 group">
-            <img
-              src={currentLogo}
-              alt="D'Calabash Hotel Logo"
-              referrerPolicy="no-referrer"
-              className="h-11 sm:h-13 w-auto object-contain transition-transform group-hover:scale-105"
-            />
+            <div className="relative flex items-center justify-center">
+              <img
+                src={currentLogo}
+                alt="D'Calabash Hotel Logo"
+                referrerPolicy="no-referrer"
+                className="h-11 sm:h-13 w-auto object-contain transition-transform group-hover:scale-105 mix-blend-multiply"
+              />
+            </div>
             <div className="flex flex-col">
               <span className="font-serif text-xl sm:text-2xl font-bold tracking-tight text-[#0F3827]">
                 D'Calabash
