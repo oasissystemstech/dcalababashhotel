@@ -34,11 +34,11 @@ export const RestaurantSection: React.FC<RestaurantSectionProps> = ({
             </div>
 
             <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 leading-tight text-balance">
-              Authentic Liberian Flavours &amp; Coastal Grills
+              {settings.restaurantHeadline || 'Authentic Liberian Flavours & Coastal Grills'}
             </h2>
 
             <p className="text-sm sm:text-base text-slate-700 leading-relaxed">
-              At D'Calabash Restaurant &amp; Bar, dining is a celebration of Liberian culinary heritage combined with contemporary international classics. From simmered pepper soup and slow-cooked cassava leaf to fresh Atlantic barracuda grilled over wood coals on our scenic open-air veranda, our chefs craft every plate with authentic pride.
+              {settings.restaurantDescription || "At D'Calabash Restaurant & Bar, dining is a celebration of Liberian culinary heritage combined with contemporary international classics. From simmered pepper soup and slow-cooked cassava leaf to fresh Atlantic barracuda grilled over wood coals on our scenic open-air veranda, our chefs craft every plate with authentic pride."}
             </p>
 
             {/* Atmosphere Features */}
@@ -46,19 +46,19 @@ export const RestaurantSection: React.FC<RestaurantSectionProps> = ({
               <div className="p-4 bg-white rounded-xl border border-slate-200/80 space-y-1 shadow-sm">
                 <Coffee className="w-5 h-5 text-[#C59B27]" />
                 <h3 className="font-semibold text-xs text-slate-900">Breakfast</h3>
-                <p className="text-[11px] text-slate-500">7:00 AM – 10:30 AM Daily</p>
+                <p className="text-[11px] text-slate-500">{settings.breakfastHours || '7:00 AM – 10:30 AM Daily'}</p>
               </div>
 
               <div className="p-4 bg-white rounded-xl border border-slate-200/80 space-y-1 shadow-sm">
                 <Flame className="w-5 h-5 text-[#C85A17]" />
                 <h3 className="font-semibold text-xs text-slate-900">Lunch &amp; Grills</h3>
-                <p className="text-[11px] text-slate-500">12:00 PM – 3:30 PM Fresh Catch</p>
+                <p className="text-[11px] text-slate-500">{settings.lunchHours || '12:00 PM – 3:30 PM Fresh Catch'}</p>
               </div>
 
               <div className="p-4 bg-white rounded-xl border border-slate-200/80 space-y-1 shadow-sm">
                 <Wine className="w-5 h-5 text-[#0F3827]" />
                 <h3 className="font-semibold text-xs text-slate-900">Dinner &amp; Bar</h3>
-                <p className="text-[11px] text-slate-500">6:00 PM – Late Veranda Lounge</p>
+                <p className="text-[11px] text-slate-500">{settings.dinnerHours || '6:00 PM – Late Veranda Lounge'}</p>
               </div>
             </div>
 

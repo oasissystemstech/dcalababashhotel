@@ -49,6 +49,18 @@ import {
   Lock,
   User,
   LogOut,
+  DollarSign,
+  Globe,
+  Clock,
+  FileText,
+  Sparkles,
+  Sliders,
+  ExternalLink,
+  Phone,
+  Mail,
+  MapPin,
+  RotateCcw,
+  Camera,
 } from 'lucide-react';
 
 const ADMIN_USERNAME = 'dcalabash';
@@ -183,9 +195,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
   const [isUploadingToStorage, setIsUploadingToStorage] = useState(false);
   const [uploadStorageNotice, setUploadStorageNotice] = useState<string | null>(null);
 
+  // Settings Tab Sub-Navigation & Logo / Page Editing State
+  const [settingsSubTab, setSettingsSubTab] = useState<'logo' | 'pages' | 'rates' | 'operations' | 'contact'>('logo');
+  const [pagesSection, setPagesSection] = useState<'hero' | 'about' | 'restaurant'>('hero');
+  const [logoInputUrl, setLogoInputUrl] = useState('');
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [logoNotice, setLogoNotice] = useState<string | null>(null);
+  const [settingsSaveSuccess, setSettingsSaveSuccess] = useState(false);
+  const [settingsSaveMessage, setSettingsSaveMessage] = useState('Settings & Rates saved successfully!');
+
   useEffect(() => {
     return DCalabashStore.subscribe(() => {
-      setSettings(DCalabashStore.getSettings());
+      const updated = DCalabashStore.getSettings();
+      setSettings(updated);
       setBookings(DCalabashStore.getHotelBookings());
       setReservations(DCalabashStore.getRestaurantReservations());
       setRoomCategories(DCalabashStore.getRoomCategories());
@@ -446,6 +468,72 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
     }
   };
 
+  // Handle Logo Upload with automatic compression and persistent storage
+  const handleLogoFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingLogo(true);
+    setLogoNotice('Optimizing and compressing logo image...');
+
+    try {
+      // Compress logo to crisp 800px max width/height, 90% quality
+      const optimized = await compressImageFile(file, 800, 0.90);
+      setLogoInputUrl(optimized.dataUrl);
+      DCalabashStore.updateLogo(optimized.dataUrl, 'actual_business_photo', false);
+      setLogoNotice(`Logo optimized to ${optimized.optimizedSizeKb} KB and updated site-wide!`);
+
+      // Try uploading to Supabase Storage if configured
+      if (isSupabaseConfigured()) {
+        setLogoNotice('Uploading logo to Supabase Storage...');
+        const res = await uploadImageToSupabase('hotel-gallery', optimized.file);
+        if (res.success && res.url) {
+          setLogoInputUrl(res.url);
+          DCalabashStore.updateLogo(res.url, 'actual_business_photo', false);
+          setLogoNotice('Logo uploaded to Supabase Storage and updated site-wide!');
+        }
+      }
+      triggerSettingsSuccess('Hotel logo updated successfully across the entire website!');
+    } catch (err: any) {
+      console.warn('Logo optimization error:', err);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          const dataUrl = event.target.result as string;
+          setLogoInputUrl(dataUrl);
+          DCalabashStore.updateLogo(dataUrl, 'actual_business_photo', false);
+          setLogoNotice('Logo updated and saved locally in browser storage.');
+          triggerSettingsSuccess('Hotel logo updated successfully!');
+        }
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setIsUploadingLogo(false);
+    }
+  };
+
+  const handleApplyLogoUrl = () => {
+    if (!logoInputUrl.trim()) return;
+    DCalabashStore.updateLogo(logoInputUrl.trim(), 'actual_business_photo', false);
+    setLogoNotice('New logo web URL applied site-wide.');
+    triggerSettingsSuccess('Logo URL updated across navigation, footer, and branding!');
+  };
+
+  const handleResetLogoToDefault = () => {
+    setLogoInputUrl(HOTEL_INFO.logoUrl);
+    DCalabashStore.updateLogo(HOTEL_INFO.logoUrl, 'actual_business_photo', false);
+    setLogoNotice("Official D'Calabash Hotel logo restored.");
+    triggerSettingsSuccess('Official default logo restored site-wide.');
+  };
+
+  const triggerSettingsSuccess = (message: string = 'Changes saved successfully to database!') => {
+    setSettingsSaveMessage(message);
+    setSettingsSaveSuccess(true);
+    setTimeout(() => {
+      setSettingsSaveSuccess(false);
+    }, 3500);
+  };
+
   // AUTHENTICATION GATE
   if (!isAuthenticated) {
     return (
@@ -606,7 +694,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-3">
             <img
-              src={HOTEL_INFO.logoUrl}
+              src={settings.logoUrl || HOTEL_INFO.logoUrl}
               alt="D'Calabash Hotel"
               className="h-10 w-auto object-contain bg-white rounded p-1"
             />
@@ -2011,86 +2099,988 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
             </div>
           )}
 
-          {/* TAB 7: HOTEL SETTINGS & RATES */}
+          {/* TAB 7: HOTEL SETTINGS, LOGO & WEBSITE PAGE BUILDER */}
           {activeTab === 'settings' && (
-            <div className="max-w-2xl bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
-              <div>
-                <h3 className="font-serif text-2xl font-bold text-slate-900">
-                  Business Settings &amp; Multi-Currency
-                </h3>
-                <p className="text-xs text-slate-500">
-                  Update contact information, exchange rate, and operational policies.
-                </p>
-              </div>
-
-              <div className="space-y-4 text-xs">
+            <div className="max-w-4xl space-y-6">
+              {/* Top Banner Card */}
+              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    Exchange Rate: 1 USD to Liberian Dollars (LRD)
-                  </label>
-                  <input
-                    type="number"
-                    value={settings.exchangeRateUsdToLrd}
-                    onChange={(e) => {
-                      DCalabashStore.updateSettings({ exchangeRateUsdToLrd: Number(e.target.value) });
-                    }}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-bold text-[#0F3827]"
-                  />
-                  <p className="text-[10px] text-slate-500 mt-1">
-                    Updates real-time price conversions across the website and booking summary.
+                  <h3 className="font-serif text-2xl font-bold text-slate-900 flex items-center gap-2">
+                    <Sliders className="w-5 h-5 text-[#C59B27]" />
+                    <span>Hotel Settings, Logo &amp; Website Content</span>
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Upload official logo, edit public website sections, configure multi-currency rates and operational policies.
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-semibold text-slate-700 mb-1">
-                      Front Desk Telephone
-                    </label>
-                    <input
-                      type="text"
-                      value={settings.telephone}
-                      onChange={(e) => DCalabashStore.updateSettings({ telephone: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-semibold text-slate-700 mb-1">
-                      Official Email
-                    </label>
-                    <input
-                      type="email"
-                      value={settings.email}
-                      onChange={(e) => DCalabashStore.updateSettings({ email: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    Brand Tagline
-                  </label>
-                  <input
-                    type="text"
-                    value={settings.tagline}
-                    onChange={(e) => DCalabashStore.updateSettings({ tagline: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    About D'Calabash Hotel Story
-                  </label>
-                  <textarea
-                    rows={4}
-                    value={settings.aboutStory}
-                    onChange={(e) => DCalabashStore.updateSettings({ aboutStory: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs"
-                  />
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => triggerSettingsSuccess('All settings and website page changes have been saved!')}
+                    className="px-4 py-2 bg-[#0F3827] hover:bg-[#164E35] text-white text-xs font-bold rounded-xl transition-all shadow-sm flex items-center gap-2 cursor-pointer"
+                  >
+                    <CheckCircle2 className="w-4 h-4 text-[#C59B27]" />
+                    <span>Save All Changes</span>
+                  </button>
                 </div>
               </div>
+
+              {/* Status Alert */}
+              {settingsSaveSuccess && (
+                <div className="p-4 bg-emerald-50 border border-emerald-300 text-emerald-900 rounded-xl text-xs flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                  <div>
+                    <strong className="font-bold">{settingsSaveMessage}</strong>
+                    <p className="text-[11px] text-emerald-700">Changes are saved in high-capacity storage and reflected live on public pages.</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Sub-Navigation Tabs */}
+              <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-3">
+                <button
+                  type="button"
+                  onClick={() => setSettingsSubTab('logo')}
+                  className={`px-4 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 transition-all cursor-pointer ${
+                    settingsSubTab === 'logo'
+                      ? 'bg-[#0F3827] text-white shadow-sm'
+                      : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                  }`}
+                >
+                  <Camera className="w-3.5 h-3.5 text-[#C59B27]" />
+                  <span>Logo &amp; Brand Identity</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSettingsSubTab('pages')}
+                  className={`px-4 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 transition-all cursor-pointer ${
+                    settingsSubTab === 'pages'
+                      ? 'bg-[#0F3827] text-white shadow-sm'
+                      : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                  }`}
+                >
+                  <FileText className="w-3.5 h-3.5 text-[#C59B27]" />
+                  <span>Website Pages &amp; Copy</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSettingsSubTab('rates')}
+                  className={`px-4 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 transition-all cursor-pointer ${
+                    settingsSubTab === 'rates'
+                      ? 'bg-[#0F3827] text-white shadow-sm'
+                      : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                  }`}
+                >
+                  <DollarSign className="w-3.5 h-3.5 text-[#C59B27]" />
+                  <span>Rates &amp; Multi-Currency</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSettingsSubTab('operations')}
+                  className={`px-4 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 transition-all cursor-pointer ${
+                    settingsSubTab === 'operations'
+                      ? 'bg-[#0F3827] text-white shadow-sm'
+                      : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                  }`}
+                >
+                  <Clock className="w-3.5 h-3.5 text-[#C59B27]" />
+                  <span>Hours &amp; Policies</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSettingsSubTab('contact')}
+                  className={`px-4 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 transition-all cursor-pointer ${
+                    settingsSubTab === 'contact'
+                      ? 'bg-[#0F3827] text-white shadow-sm'
+                      : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                  }`}
+                >
+                  <MapPin className="w-3.5 h-3.5 text-[#C59B27]" />
+                  <span>Contact, Location &amp; Social</span>
+                </button>
+              </div>
+
+              {/* SUB-TAB 1: LOGO & BRAND IDENTITY */}
+              {settingsSubTab === 'logo' && (
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                  <div>
+                    <h4 className="font-serif text-lg font-bold text-slate-900">
+                      Hotel Logo &amp; Visual Branding
+                    </h4>
+                    <p className="text-xs text-slate-500">
+                      Upload an official hotel logo file, enter a hosted image URL, or reset to the original default.
+                    </p>
+                  </div>
+
+                  {/* Dual Background Logo Preview */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Light Background Preview */}
+                    <div className="p-4 bg-white rounded-xl border border-slate-200 flex flex-col items-center justify-center text-center space-y-3">
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
+                        Preview on Light (Navigation Bar / Documents)
+                      </span>
+                      <div className="h-28 w-full flex items-center justify-center p-3 bg-[#FAF8F5] rounded-lg border border-slate-100">
+                        <img
+                          src={settings.logoUrl || HOTEL_INFO.logoUrl}
+                          alt="D'Calabash Hotel Logo"
+                          className="max-h-24 max-w-full object-contain"
+                        />
+                      </div>
+                      <span className="text-[11px] text-slate-500 font-medium">
+                        Standard Ivory/White Background
+                      </span>
+                    </div>
+
+                    {/* Dark Background Preview */}
+                    <div className="p-4 bg-[#0F3827] text-white rounded-xl border border-[#0F3827] flex flex-col items-center justify-center text-center space-y-3">
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-white/70">
+                        Preview on Dark (Footer / Mobile Header)
+                      </span>
+                      <div className="h-28 w-full flex items-center justify-center p-3 bg-white/10 rounded-lg border border-white/20">
+                        <img
+                          src={settings.logoUrl || HOTEL_INFO.logoUrl}
+                          alt="D'Calabash Hotel Logo"
+                          className="max-h-24 max-w-full object-contain bg-white rounded p-1"
+                        />
+                      </div>
+                      <span className="text-[11px] text-white/80 font-medium">
+                        Forest Green Brand Tone
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Logo Status Badge */}
+                  <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-slate-700">Active Logo Source:</span>
+                      {(!settings.logoUrl || settings.logoUrl === HOTEL_INFO.logoUrl) ? (
+                        <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded font-semibold text-[11px]">
+                          Official D'Calabash Default Logo
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-semibold text-[11px]">
+                          Custom Uploaded Logo
+                        </span>
+                      )}
+                    </div>
+
+                    {settings.logoUrl && settings.logoUrl !== HOTEL_INFO.logoUrl && (
+                      <button
+                        type="button"
+                        onClick={handleResetLogoToDefault}
+                        className="text-xs text-amber-700 hover:text-amber-900 font-semibold flex items-center gap-1 hover:underline cursor-pointer"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span>Restore Default Logo</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Action 1: Upload File */}
+                  <div className="p-5 bg-emerald-50/50 rounded-xl border border-emerald-200/70 space-y-3">
+                    <div className="flex items-center gap-2 text-[#0F3827]">
+                      <Upload className="w-4 h-4 text-[#C59B27]" />
+                      <h5 className="font-bold text-xs uppercase tracking-wider">
+                        Upload New Logo File
+                      </h5>
+                    </div>
+                    <p className="text-xs text-slate-600">
+                      Select a PNG, SVG, or JPG image file. The image is automatically compressed, cached in persistent browser storage, and uploaded to your cloud storage bucket.
+                    </p>
+
+                    <label className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#0F3827] hover:bg-[#164E35] text-white text-xs font-semibold rounded-xl cursor-pointer transition-all shadow-sm">
+                      <Upload className="w-3.5 h-3.5 text-[#C59B27]" />
+                      <span>{isUploadingLogo ? 'Processing & Optimizing...' : 'Choose Logo File'}</span>
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                        onChange={handleLogoFileUpload}
+                        disabled={isUploadingLogo}
+                        className="hidden"
+                      />
+                    </label>
+
+                    {logoNotice && (
+                      <p className="text-[11px] font-medium text-emerald-800 pt-1">
+                        {logoNotice}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Action 2: Enter Web URL */}
+                  <div className="p-5 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+                    <div className="flex items-center gap-2 text-slate-800">
+                      <Globe className="w-4 h-4 text-[#C59B27]" />
+                      <h5 className="font-bold text-xs uppercase tracking-wider">
+                        Or Enter Direct Web Image URL
+                      </h5>
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        value={logoInputUrl}
+                        onChange={(e) => setLogoInputUrl(e.target.value)}
+                        placeholder="https://example.com/logo.png"
+                        className="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-xs font-mono"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleApplyLogoUrl}
+                        className="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer"
+                      >
+                        Apply URL
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Business Name & Tagline */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100 text-xs">
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1">
+                        Business Name
+                      </label>
+                      <input
+                        type="text"
+                        value={settings.businessName}
+                        onChange={(e) => {
+                          DCalabashStore.updateSettings({ businessName: e.target.value });
+                        }}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1">
+                        Brand Tagline / Slogan
+                      </label>
+                      <input
+                        type="text"
+                        value={settings.tagline}
+                        onChange={(e) => {
+                          DCalabashStore.updateSettings({ tagline: e.target.value });
+                        }}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* SUB-TAB 2: WEBSITE PAGES & COPY */}
+              {settingsSubTab === 'pages' && (
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                  <div>
+                    <h4 className="font-serif text-lg font-bold text-slate-900">
+                      Website Pages &amp; Section Copy Editor
+                    </h4>
+                    <p className="text-xs text-slate-500">
+                      Edit text headlines, introductory paragraphs, and background imagery for each section of the public website.
+                    </p>
+                  </div>
+
+                  {/* Section Selector Pills */}
+                  <div className="flex gap-2 p-1 bg-slate-100 rounded-xl w-fit">
+                    <button
+                      type="button"
+                      onClick={() => setPagesSection('hero')}
+                      className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                        pagesSection === 'hero'
+                          ? 'bg-white text-[#0F3827] shadow-sm'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      Homepage &amp; Hero Banner
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPagesSection('about')}
+                      className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                        pagesSection === 'about'
+                          ? 'bg-white text-[#0F3827] shadow-sm'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      About Story &amp; Heritage
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPagesSection('restaurant')}
+                      className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                        pagesSection === 'restaurant'
+                          ? 'bg-white text-[#0F3827] shadow-sm'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      Restaurant &amp; Dining
+                    </button>
+                  </div>
+
+                  {/* 1. Hero / Homepage */}
+                  {pagesSection === 'hero' && (
+                    <div className="space-y-4 text-xs">
+                      <div>
+                        <label className="block font-semibold text-slate-700 mb-1">
+                          Hero Main Headline
+                        </label>
+                        <input
+                          type="text"
+                          value={settings.heroHeadline || 'Where Liberian Warmth Meets Modern Comfort'}
+                          onChange={(e) => {
+                            DCalabashStore.updateSettings({ heroHeadline: e.target.value });
+                          }}
+                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-semibold"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-semibold text-slate-700 mb-1">
+                          Hero Welcoming Subheadline &amp; Intro
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={settings.heroSubheadline || ''}
+                          onChange={(e) => {
+                            DCalabashStore.updateSettings({ heroSubheadline: e.target.value });
+                          }}
+                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs"
+                          placeholder="Welcome to D'Calabash Hotel & Restaurant..."
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-semibold text-slate-700 mb-1">
+                          Hero Showcase Image URL
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="url"
+                            value={settings.heroImageUrl || ''}
+                            onChange={(e) => {
+                              DCalabashStore.updateSettings({ heroImageUrl: e.target.value });
+                            }}
+                            className="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-xs font-mono"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => openImageModal(
+                              'banner',
+                              'Hero Homepage Banner',
+                              settings.heroImageUrl || '',
+                              settings.heroImageSourceType || 'licensed_stock',
+                              settings.isHeroImageTemporary || false,
+                              'hero'
+                            )}
+                            className="px-3 py-2 bg-[#0F3827] text-white text-xs font-semibold rounded-lg flex items-center gap-1 cursor-pointer"
+                          >
+                            <Camera className="w-3.5 h-3.5" />
+                            <span>Change Photo</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Hero Image Preview */}
+                      {settings.heroImageUrl && (
+                        <div className="relative aspect-video max-h-48 rounded-xl overflow-hidden border border-slate-200">
+                          <img
+                            src={settings.heroImageUrl}
+                            alt="Hero Preview"
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-4">
+                            <p className="text-white text-sm font-serif font-bold">
+                              {settings.heroHeadline || 'Where Liberian Warmth Meets Modern Comfort'}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* 2. About Story & Heritage */}
+                  {pagesSection === 'about' && (
+                    <div className="space-y-4 text-xs">
+                      <div>
+                        <label className="block font-semibold text-slate-700 mb-1">
+                          About D'Calabash Hotel Story &amp; History
+                        </label>
+                        <textarea
+                          rows={4}
+                          value={settings.aboutStory}
+                          onChange={(e) => {
+                            DCalabashStore.updateSettings({ aboutStory: e.target.value });
+                          }}
+                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block font-semibold text-slate-700 mb-1">
+                            Mission Statement
+                          </label>
+                          <textarea
+                            rows={3}
+                            value={settings.missionStatement}
+                            onChange={(e) => {
+                              DCalabashStore.updateSettings({ missionStatement: e.target.value });
+                            }}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block font-semibold text-slate-700 mb-1">
+                            Vision Statement
+                          </label>
+                          <textarea
+                            rows={3}
+                            value={settings.visionStatement}
+                            onChange={(e) => {
+                              DCalabashStore.updateSettings({ visionStatement: e.target.value });
+                            }}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block font-semibold text-slate-700 mb-1">
+                          The Calabash Cultural Meaning Narrative
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={settings.calabashMeaningText || ''}
+                          onChange={(e) => {
+                            DCalabashStore.updateSettings({ calabashMeaningText: e.target.value });
+                          }}
+                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs"
+                          placeholder="In Liberian and West African tradition, the calabash is a timeless vessel..."
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-semibold text-slate-700 mb-1">
+                          About Section Showcase Image
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="url"
+                            value={settings.aboutImageUrl || ''}
+                            onChange={(e) => {
+                              DCalabashStore.updateSettings({ aboutImageUrl: e.target.value });
+                            }}
+                            className="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-xs font-mono"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => openImageModal(
+                              'banner',
+                              'About Section Photo',
+                              settings.aboutImageUrl || '',
+                              settings.aboutImageSourceType || 'licensed_stock',
+                              settings.isAboutImageTemporary || false,
+                              'about_photo'
+                            )}
+                            className="px-3 py-2 bg-[#0F3827] text-white text-xs font-semibold rounded-lg flex items-center gap-1 cursor-pointer"
+                          >
+                            <Camera className="w-3.5 h-3.5" />
+                            <span>Change Photo</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 3. Restaurant & Dining */}
+                  {pagesSection === 'restaurant' && (
+                    <div className="space-y-4 text-xs">
+                      <div>
+                        <label className="block font-semibold text-slate-700 mb-1">
+                          Restaurant Main Headline
+                        </label>
+                        <input
+                          type="text"
+                          value={settings.restaurantHeadline || 'Authentic Liberian Flavours & Coastal Grills'}
+                          onChange={(e) => {
+                            DCalabashStore.updateSettings({ restaurantHeadline: e.target.value });
+                          }}
+                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-semibold"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-semibold text-slate-700 mb-1">
+                          Restaurant Atmosphere &amp; Culinary Narrative
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={settings.restaurantDescription || ''}
+                          onChange={(e) => {
+                            DCalabashStore.updateSettings({ restaurantDescription: e.target.value });
+                          }}
+                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs"
+                          placeholder="At D'Calabash Restaurant & Bar, dining is a celebration..."
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                          <label className="block font-semibold text-slate-700 mb-1">
+                            Breakfast Serving Hours
+                          </label>
+                          <input
+                            type="text"
+                            value={settings.breakfastHours || '7:00 AM – 10:30 AM Daily'}
+                            onChange={(e) => {
+                              DCalabashStore.updateSettings({ breakfastHours: e.target.value });
+                            }}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block font-semibold text-slate-700 mb-1">
+                            Lunch &amp; Grills Hours
+                          </label>
+                          <input
+                            type="text"
+                            value={settings.lunchHours || '12:00 PM – 3:30 PM Fresh Catch'}
+                            onChange={(e) => {
+                              DCalabashStore.updateSettings({ lunchHours: e.target.value });
+                            }}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block font-semibold text-slate-700 mb-1">
+                            Dinner &amp; Bar Hours
+                          </label>
+                          <input
+                            type="text"
+                            value={settings.dinnerHours || '6:00 PM – Late Veranda Lounge'}
+                            onChange={(e) => {
+                              DCalabashStore.updateSettings({ dinnerHours: e.target.value });
+                            }}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block font-semibold text-slate-700 mb-1">
+                          Restaurant Atmosphere Photo URL
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="url"
+                            value={settings.restaurantHeroImageUrl || ''}
+                            onChange={(e) => {
+                              DCalabashStore.updateSettings({ restaurantHeroImageUrl: e.target.value });
+                            }}
+                            className="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-xs font-mono"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => openImageModal(
+                              'banner',
+                              'Restaurant Atmosphere Banner',
+                              settings.restaurantHeroImageUrl || '',
+                              settings.restaurantHeroImageSourceType || 'licensed_stock',
+                              settings.isRestaurantHeroImageTemporary || false,
+                              'restaurant_hero'
+                            )}
+                            className="px-3 py-2 bg-[#0F3827] text-white text-xs font-semibold rounded-lg flex items-center gap-1 cursor-pointer"
+                          >
+                            <Camera className="w-3.5 h-3.5" />
+                            <span>Change Photo</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* SUB-TAB 3: RATES & MULTI-CURRENCY */}
+              {settingsSubTab === 'rates' && (
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                  <div>
+                    <h4 className="font-serif text-lg font-bold text-slate-900">
+                      Exchange Rates, Taxes &amp; Currency Settings
+                    </h4>
+                    <p className="text-xs text-slate-500">
+                      Configure USD to Liberian Dollar conversion, tax rates, and default currency display.
+                    </p>
+                  </div>
+
+                  <div className="p-4 bg-amber-50/60 rounded-xl border border-amber-200/80 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="block font-bold text-amber-950 text-xs">
+                        Exchange Rate: 1 USD to Liberian Dollars (LRD)
+                      </label>
+                      <span className="text-[11px] text-amber-800 font-mono">
+                        Active: $1.00 USD = {settings.exchangeRateUsdToLrd} LRD
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="relative flex-1">
+                        <span className="absolute left-3 top-2.5 text-xs font-bold text-slate-400">
+                          LRD
+                        </span>
+                        <input
+                          type="number"
+                          step="0.5"
+                          value={settings.exchangeRateUsdToLrd}
+                          onChange={(e) => {
+                            DCalabashStore.updateSettings({ exchangeRateUsdToLrd: Number(e.target.value) });
+                          }}
+                          className="w-full pl-12 pr-3 py-2 border border-amber-300 rounded-lg text-sm font-bold text-[#0F3827] bg-white"
+                        />
+                      </div>
+
+                      {/* Quick Presets */}
+                      <div className="flex gap-1">
+                        {[190, 195, 200, 205].map((rate) => (
+                          <button
+                            key={rate}
+                            type="button"
+                            onClick={() => DCalabashStore.updateSettings({ exchangeRateUsdToLrd: rate })}
+                            className={`px-2.5 py-1.5 text-xs font-semibold rounded border transition-colors ${
+                              settings.exchangeRateUsdToLrd === rate
+                                ? 'bg-[#0F3827] text-white border-[#0F3827]'
+                                : 'bg-white hover:bg-amber-100 text-slate-700 border-amber-200'
+                            }`}
+                          >
+                            {rate}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Interactive Live Converter Preview */}
+                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-amber-200 text-center font-mono text-[11px]">
+                      <div className="p-2 bg-white rounded border border-amber-200">
+                        <span className="text-slate-500">$50 USD = </span>
+                        <strong className="text-emerald-800">LRD {(50 * settings.exchangeRateUsdToLrd).toLocaleString()}</strong>
+                      </div>
+                      <div className="p-2 bg-white rounded border border-amber-200">
+                        <span className="text-slate-500">$100 USD = </span>
+                        <strong className="text-emerald-800">LRD {(100 * settings.exchangeRateUsdToLrd).toLocaleString()}</strong>
+                      </div>
+                      <div className="p-2 bg-white rounded border border-amber-200">
+                        <span className="text-slate-500">$165 USD = </span>
+                        <strong className="text-emerald-800">LRD {(165 * settings.exchangeRateUsdToLrd).toLocaleString()}</strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Currency & Tax Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1">
+                        Default Website Currency
+                      </label>
+                      <select
+                        value={settings.defaultCurrency}
+                        onChange={(e) => {
+                          DCalabashStore.updateSettings({ defaultCurrency: e.target.value as any });
+                        }}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-semibold"
+                      >
+                        <option value="USD">United States Dollars (USD $)</option>
+                        <option value="LRD">Liberian Dollars (LRD)</option>
+                      </select>
+                      <p className="text-[10px] text-slate-500 mt-1">
+                        Default currency displayed to guests when visiting the website.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1">
+                        Room Occupancy Tax / VAT Rate (%)
+                      </label>
+                      <input
+                        type="number"
+                        step="0.5"
+                        value={settings.taxRatePercent}
+                        onChange={(e) => {
+                          DCalabashStore.updateSettings({ taxRatePercent: Number(e.target.value) });
+                        }}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-bold text-slate-800"
+                      />
+                      <p className="text-[10px] text-slate-500 mt-1">
+                        Applied during room booking total calculation.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1">
+                        Service Charge Rate (%)
+                      </label>
+                      <input
+                        type="number"
+                        step="0.5"
+                        value={settings.serviceChargePercent}
+                        onChange={(e) => {
+                          DCalabashStore.updateSettings({ serviceChargePercent: Number(e.target.value) });
+                        }}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-bold text-slate-800"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1">
+                        Buffet / Gourmet Breakfast Add-on Price ($ USD)
+                      </label>
+                      <input
+                        type="number"
+                        step="1"
+                        value={settings.breakfastPriceUsd || 15}
+                        onChange={(e) => {
+                          DCalabashStore.updateSettings({ breakfastPriceUsd: Number(e.target.value) });
+                        }}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-bold text-slate-800"
+                      />
+                      <p className="text-[10px] text-slate-500 mt-1">
+                        Standard pricing per guest per morning.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* SUB-TAB 4: HOURS & OPERATIONS */}
+              {settingsSubTab === 'operations' && (
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                  <div>
+                    <h4 className="font-serif text-lg font-bold text-slate-900">
+                      Operational Policies &amp; Reception Hours
+                    </h4>
+                    <p className="text-xs text-slate-500">
+                      Define guest check-in/out schedules and dining opening hours.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1">
+                        Hotel Check-in Time (24h format)
+                      </label>
+                      <input
+                        type="text"
+                        value={settings.hotelCheckInTime}
+                        onChange={(e) => {
+                          DCalabashStore.updateSettings({ hotelCheckInTime: e.target.value });
+                        }}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs"
+                        placeholder="14:00"
+                      />
+                      <p className="text-[10px] text-slate-500 mt-1">e.g. 14:00 (2:00 PM)</p>
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1">
+                        Hotel Check-out Time (24h format)
+                      </label>
+                      <input
+                        type="text"
+                        value={settings.hotelCheckOutTime}
+                        onChange={(e) => {
+                          DCalabashStore.updateSettings({ hotelCheckOutTime: e.target.value });
+                        }}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs"
+                        placeholder="11:00"
+                      />
+                      <p className="text-[10px] text-slate-500 mt-1">e.g. 11:00 (11:00 AM)</p>
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1">
+                        Restaurant Opening Time
+                      </label>
+                      <input
+                        type="text"
+                        value={settings.restaurantOpenTime}
+                        onChange={(e) => {
+                          DCalabashStore.updateSettings({ restaurantOpenTime: e.target.value });
+                        }}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs"
+                        placeholder="07:00"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1">
+                        Restaurant Closing Time
+                      </label>
+                      <input
+                        type="text"
+                        value={settings.restaurantCloseTime}
+                        onChange={(e) => {
+                          DCalabashStore.updateSettings({ restaurantCloseTime: e.target.value });
+                        }}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs"
+                        placeholder="23:00"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                    <div>
+                      <span className="font-bold text-xs text-slate-800 block">
+                        Online Direct Bookings Status
+                      </span>
+                      <span className="text-[11px] text-slate-500">
+                        When active, guests can book rooms directly through the website.
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        DCalabashStore.updateSettings({ isOnlineBookingActive: !settings.isOnlineBookingActive });
+                      }}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                        settings.isOnlineBookingActive
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-slate-300 text-slate-700'
+                      }`}
+                    >
+                      {settings.isOnlineBookingActive ? 'Active (Accepting)' : 'Paused (Maintenance)'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* SUB-TAB 5: CONTACT, LOCATION & SOCIAL */}
+              {settingsSubTab === 'contact' && (
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                  <div>
+                    <h4 className="font-serif text-lg font-bold text-slate-900">
+                      Contact Information, Concierge &amp; Social Links
+                    </h4>
+                    <p className="text-xs text-slate-500">
+                      Keep your front desk numbers, WhatsApp concierge, and address updated across the public website and reservation confirmations.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1">
+                        Front Desk Telephone (Public Format)
+                      </label>
+                      <input
+                        type="text"
+                        value={settings.telephone}
+                        onChange={(e) => {
+                          DCalabashStore.updateSettings({ telephone: e.target.value });
+                        }}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs"
+                        placeholder="+231 77 763 7559"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1">
+                        WhatsApp Concierge Number (Digits with Country Code)
+                      </label>
+                      <input
+                        type="text"
+                        value={settings.whatsappNumber}
+                        onChange={(e) => {
+                          DCalabashStore.updateSettings({ whatsappNumber: e.target.value });
+                        }}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-mono"
+                        placeholder="231777637559"
+                      />
+                      <p className="text-[10px] text-slate-500 mt-1">
+                        Used for one-click chat links. Do not include spaces or '+'.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1">
+                        Official Hotel Email
+                      </label>
+                      <input
+                        type="email"
+                        value={settings.email}
+                        onChange={(e) => {
+                          DCalabashStore.updateSettings({ email: e.target.value });
+                        }}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs"
+                        placeholder="admin@dcalabashhotel.co"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1">
+                        Physical Hotel Address
+                      </label>
+                      <input
+                        type="text"
+                        value={settings.address}
+                        onChange={(e) => {
+                          DCalabashStore.updateSettings({ address: e.target.value });
+                        }}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs"
+                        placeholder="Congo Town Back Road, Monrovia, Liberia, 231"
+                      />
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <label className="block font-semibold text-slate-700 mb-1">
+                        Driving Directions &amp; Landmarks
+                      </label>
+                      <input
+                        type="text"
+                        value={settings.directionsText || ''}
+                        onChange={(e) => {
+                          DCalabashStore.updateSettings({ directionsText: e.target.value });
+                        }}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs"
+                        placeholder="Opposite the serene lagoon waterway, accessible via Tubman Boulevard..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1">
+                        Official Facebook Page URL
+                      </label>
+                      <input
+                        type="url"
+                        value={settings.facebookUrl}
+                        onChange={(e) => {
+                          DCalabashStore.updateSettings({ facebookUrl: e.target.value });
+                        }}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-mono"
+                        placeholder="https://facebook.com/..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1">
+                        Official Instagram Profile URL
+                      </label>
+                      <input
+                        type="url"
+                        value={settings.instagramUrl}
+                        onChange={(e) => {
+                          DCalabashStore.updateSettings({ instagramUrl: e.target.value });
+                        }}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-mono"
+                        placeholder="https://instagram.com/..."
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

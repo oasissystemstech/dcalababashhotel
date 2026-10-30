@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { HOTEL_INFO } from '../constants/hotelInfo';
-import { Currency } from '../types';
+import { Currency, BusinessSettings } from '../types';
+import { DCalabashStore } from '../lib/store';
 import { Menu, X, Phone, MessageSquare, Shield, Calendar, UtensilsCrossed, Search } from 'lucide-react';
 
 interface NavbarProps {
@@ -21,6 +22,15 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAdmin,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [settings, setSettings] = useState<BusinessSettings>(DCalabashStore.getSettings());
+
+  useEffect(() => {
+    return DCalabashStore.subscribe(() => {
+      setSettings(DCalabashStore.getSettings());
+    });
+  }, []);
+
+  const currentLogo = settings.logoUrl || HOTEL_INFO.logoUrl;
 
   return (
     <header className="sticky top-0 z-50 bg-[#FAF8F5]/95 backdrop-blur-md border-b border-[#0F3827]/10 transition-colors">
@@ -75,7 +85,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Zone 1: Single text element wordmark + Official Brand Logo */}
           <a href="#" className="flex items-center gap-3 shrink-0 group">
             <img
-              src={HOTEL_INFO.logoUrl}
+              src={currentLogo}
               alt="D'Calabash Hotel Logo"
               referrerPolicy="no-referrer"
               className="h-11 sm:h-13 w-auto object-contain transition-transform group-hover:scale-105"

@@ -59,6 +59,19 @@ const INITIAL_SETTINGS: BusinessSettings = {
   restaurantHeroImageUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=85',
   restaurantHeroImageSourceType: 'licensed_stock',
   isRestaurantHeroImageTemporary: true,
+  logoUrl: HOTEL_INFO.logoUrl,
+  logoSourceType: 'actual_business_photo',
+  isLogoTemporary: false,
+  heroHeadline: 'Where Liberian Warmth Meets Modern Comfort',
+  heroSubheadline: "Welcome to D'Calabash Hotel & Restaurant. Discover tranquil boutique suites, an open-air scenic veranda overlooking the lagoon, and an acclaimed kitchen serving authentic local delicacies, fresh coastal seafood, and crafted cocktails.",
+  breakfastPriceUsd: 15.0,
+  calabashMeaningText: "In Liberian and West African tradition, the calabash is a timeless vessel of gathering, sharing refreshment, and warm welcome. At D'Calabash Hotel, every guest is welcomed as family into an oasis of comfort, scenic beauty, and sincere respect.",
+  restaurantHeadline: 'Authentic Liberian Flavours & Coastal Grills',
+  restaurantDescription: "At D'Calabash Restaurant & Bar, dining is a celebration of Liberian culinary heritage combined with contemporary international classics. From simmered pepper soup and slow-cooked cassava leaf to fresh Atlantic barracuda grilled over wood coals on our scenic open-air veranda, our chefs craft every plate with authentic pride.",
+  breakfastHours: '7:00 AM – 10:30 AM Daily',
+  lunchHours: '12:00 PM – 3:30 PM Fresh Catch',
+  dinnerHours: '6:00 PM – 10:30 PM & Late Lounge',
+  directionsText: 'Located on Oldest Congo Town Back Road in Monrovia, Liberia, fronting the peaceful lagoon waterway. Accessible via Tubman Boulevard.',
 };
 
 // Initial Room Categories with realistic suite photography
@@ -1343,7 +1356,7 @@ class DataStore {
     saveStored(STORAGE_KEY_SETTINGS, this.settings);
     this.notify();
 
-    // Sync banner images or story changes to Supabase
+    // Sync banner images, logo or story changes to Supabase
     const client = getSupabaseClient();
     if (client) {
       client
@@ -1354,11 +1367,40 @@ class DataStore {
           about_image_url: this.settings.aboutImageUrl,
           about_story: this.settings.aboutStory,
           tagline: this.settings.tagline,
+          exchange_rate_usd_to_lrd: this.settings.exchangeRateUsdToLrd,
+          telephone: this.settings.telephone,
+          email: this.settings.email,
         })
         .neq('business_name', 'none')
         .then(
           () => {},
           (err) => console.warn('Supabase settings update note:', err)
+        );
+    }
+  }
+
+  public updateLogo(
+    logoUrl: string,
+    sourceType: ImageSourceType = 'actual_business_photo',
+    isTemporary: boolean = false
+  ): void {
+    this.settings.logoUrl = logoUrl;
+    this.settings.logoSourceType = sourceType;
+    this.settings.isLogoTemporary = isTemporary;
+    saveStored(STORAGE_KEY_SETTINGS, this.settings);
+    this.notify();
+
+    const client = getSupabaseClient();
+    if (client) {
+      client
+        .from('business_settings')
+        .update({
+          hero_image_url: this.settings.heroImageUrl,
+        })
+        .neq('business_name', 'none')
+        .then(
+          () => {},
+          (err) => console.warn('Supabase logo update note:', err)
         );
     }
   }

@@ -46,7 +46,7 @@ export const AboutSection: React.FC = () => {
                 {/* Brand Seal on bottom of photo */}
                 <div className="absolute bottom-3 left-4 right-4 z-10 flex items-center gap-3">
                   <img
-                    src={HOTEL_INFO.logoUrl}
+                    src={settings.logoUrl || HOTEL_INFO.logoUrl}
                     alt="Official Logo"
                     className="h-12 w-12 object-contain bg-white rounded-xl p-1 shadow-md shrink-0"
                   />
@@ -133,7 +133,7 @@ export const AboutSection: React.FC = () => {
                 <span>The Calabash Meaning</span>
               </div>
               <p className="text-xs text-slate-200 leading-relaxed">
-                In Liberian and West African tradition, the calabash is a timeless vessel of gathering, sharing refreshment, and warm welcome. At D'Calabash Hotel, every guest is welcomed as family into an oasis of comfort, scenic beauty, and sincere respect.
+                {settings.calabashMeaningText || "In Liberian and West African tradition, the calabash is a timeless vessel of gathering, sharing refreshment, and warm welcome. At D'Calabash Hotel, every guest is welcomed as family into an oasis of comfort, scenic beauty, and sincere respect."}
               </p>
             </div>
           </div>

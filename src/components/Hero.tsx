@@ -65,16 +65,19 @@ export const Hero: React.FC<HeroProps> = ({
             </div>
 
             <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold text-slate-900 leading-[1.15] text-balance">
-              Where Liberian Warmth Meets Modern Comfort
+              {settings.heroHeadline || 'Where Liberian Warmth Meets Modern Comfort'}
             </h1>
 
             <p className="text-base sm:text-lg text-slate-700 leading-relaxed max-w-2xl">
-              Welcome to <strong className="text-[#0F3827] font-semibold">D'Calabash Hotel &amp; Restaurant</strong>. 
-              Discover tranquil boutique suites, an open-air scenic veranda overlooking the lagoon, and an acclaimed kitchen serving authentic local delicacies, fresh coastal seafood, and crafted cocktails.
+              {settings.heroSubheadline || (
+                <>
+                  Welcome to <strong className="text-[#0F3827] font-semibold">D'Calabash Hotel &amp; Restaurant</strong>. Discover tranquil boutique suites, an open-air scenic veranda overlooking the lagoon, and an acclaimed kitchen serving authentic local delicacies, fresh coastal seafood, and crafted cocktails.
+                </>
+              )}
             </p>
 
             <blockquote className="border-l-2 border-[#C59B27] pl-4 py-1 italic text-slate-600 font-serif text-sm sm:text-base">
-              "{HOTEL_INFO.brandPromise}"
+              "{settings.tagline || HOTEL_INFO.brandPromise}"
             </blockquote>
 
             {/* Primary Action Buttons */}

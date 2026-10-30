@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { HOTEL_INFO } from '../constants/hotelInfo';
+import { BusinessSettings } from '../types';
+import { DCalabashStore } from '../lib/store';
 import { Phone, Mail, MapPin, Shield, ExternalLink, Heart } from 'lucide-react';
 
 interface FooterProps {
@@ -8,6 +10,16 @@ interface FooterProps {
 }
 
 export const Footer: React.FC<FooterProps> = ({ onOpenAdmin, onOpenLookup }) => {
+  const [settings, setSettings] = useState<BusinessSettings>(DCalabashStore.getSettings());
+
+  useEffect(() => {
+    return DCalabashStore.subscribe(() => {
+      setSettings(DCalabashStore.getSettings());
+    });
+  }, []);
+
+  const currentLogo = settings.logoUrl || HOTEL_INFO.logoUrl;
+
   return (
     <footer className="bg-[#0F3827] text-white border-t border-[#0F3827]/40">
       {/* Main Footer Grid */}
@@ -17,7 +29,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdmin, onOpenLookup }) => 
           <div className="lg:col-span-4 space-y-4">
             <div className="flex items-center gap-3">
               <img
-                src={HOTEL_INFO.logoUrl}
+                src={currentLogo}
                 alt="D'Calabash Hotel Logo"
                 className="h-14 w-auto object-contain bg-white rounded-lg p-1"
               />
@@ -36,13 +48,13 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdmin, onOpenLookup }) => 
             </p>
 
             <blockquote className="border-l-2 border-[#C59B27] pl-3 py-0.5 text-xs italic text-[#C59B27] font-serif">
-              "{HOTEL_INFO.brandPromise}"
+              "{settings.tagline || HOTEL_INFO.brandPromise}"
             </blockquote>
 
             {/* Social Media Links */}
             <div className="pt-2 flex items-center gap-3">
               <a
-                href={HOTEL_INFO.facebookUrl}
+                href={settings.facebookUrl || HOTEL_INFO.facebookUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-xs font-medium text-white transition-colors flex items-center gap-1.5"
@@ -53,7 +65,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdmin, onOpenLookup }) => 
               </a>
 
               <a
-                href={HOTEL_INFO.instagramUrl}
+                href={settings.instagramUrl || HOTEL_INFO.instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-xs font-medium text-white transition-colors flex items-center gap-1.5"
@@ -161,18 +173,18 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdmin, onOpenLookup }) => 
             <div className="space-y-2.5 text-xs text-slate-300">
               <div className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-[#C59B27] shrink-0 mt-0.5" />
-                <span>{HOTEL_INFO.address}</span>
+                <span>{settings.address || HOTEL_INFO.address}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-[#C59B27] shrink-0" />
-                <a href={`tel:${HOTEL_INFO.cleanPhone}`} className="hover:text-white font-medium">
-                  {HOTEL_INFO.telephone}
+                <a href={`tel:${settings.whatsappNumber || HOTEL_INFO.cleanPhone}`} className="hover:text-white font-medium">
+                  {settings.telephone || HOTEL_INFO.telephone}
                 </a>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-[#C59B27] shrink-0" />
-                <a href={`mailto:${HOTEL_INFO.email}`} className="hover:text-white font-medium">
-                  {HOTEL_INFO.email}
+                <a href={`mailto:${settings.email || HOTEL_INFO.email}`} className="hover:text-white font-medium">
+                  {settings.email || HOTEL_INFO.email}
                 </a>
               </div>
             </div>

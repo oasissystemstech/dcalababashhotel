@@ -37,6 +37,19 @@ export interface BusinessSettings {
   restaurantHeroImageUrl?: string;
   restaurantHeroImageSourceType?: ImageSourceType;
   isRestaurantHeroImageTemporary?: boolean;
+  logoUrl?: string;
+  logoSourceType?: ImageSourceType;
+  isLogoTemporary?: boolean;
+  heroHeadline?: string;
+  heroSubheadline?: string;
+  breakfastPriceUsd?: number;
+  calabashMeaningText?: string;
+  restaurantHeadline?: string;
+  restaurantDescription?: string;
+  breakfastHours?: string;
+  lunchHours?: string;
+  dinnerHours?: string;
+  directionsText?: string;
 }
 
 export interface RoomCategory {

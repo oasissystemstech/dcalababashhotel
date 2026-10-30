@@ -1,9 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { HOTEL_INFO, createWhatsAppUrl } from '../constants/hotelInfo';
 import { DCalabashStore } from '../lib/store';
-import { Phone, Mail, MapPin, MessageSquare, Send, CheckCircle2, AlertCircle, ExternalLink } from 'lucide-react';
+import { BusinessSettings } from '../types';
+import { Phone, Mail, MapPin, MessageSquare, Send, CheckCircle2, AlertCircle, ExternalLink, Navigation } from 'lucide-react';
 
 export const ContactSection: React.FC = () => {
+  const [settings, setSettings] = useState<BusinessSettings>(DCalabashStore.getSettings());
+
+  useEffect(() => {
+    return DCalabashStore.subscribe(() => {
+      setSettings(DCalabashStore.getSettings());
+    });
+  }, []);
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -73,10 +82,10 @@ export const ContactSection: React.FC = () => {
                     Telephone Assistance
                   </div>
                   <a
-                    href={`tel:${HOTEL_INFO.cleanPhone}`}
+                    href={`tel:${settings.whatsappNumber || HOTEL_INFO.cleanPhone}`}
                     className="font-bold text-sm text-slate-900 hover:text-[#0F3827]"
                   >
-                    {HOTEL_INFO.telephone}
+                    {settings.telephone || HOTEL_INFO.telephone}
                   </a>
                   <p className="text-[11px] text-slate-500">24/7 Front Desk Hotline</p>
                 </div>
@@ -114,10 +123,10 @@ export const ContactSection: React.FC = () => {
                     Official Email
                   </div>
                   <a
-                    href={`mailto:${HOTEL_INFO.email}`}
+                    href={`mailto:${settings.email || HOTEL_INFO.email}`}
                     className="font-bold text-sm text-slate-900 hover:text-[#0F3827]"
                   >
-                    {HOTEL_INFO.email}
+                    {settings.email || HOTEL_INFO.email}
                   </a>
                   <p className="text-[11px] text-slate-500">Business &amp; Reservation Inquiries</p>
                 </div>
@@ -133,8 +142,13 @@ export const ContactSection: React.FC = () => {
                     Physical Address
                   </div>
                   <p className="font-bold text-sm text-slate-900">
-                    {HOTEL_INFO.address}
+                    {settings.address || HOTEL_INFO.address}
                   </p>
+                  {settings.directionsText && (
+                    <p className="text-xs text-slate-500 mt-1 italic">
+                      {settings.directionsText}
+                    </p>
+                  )}
                   <a
                     href={HOTEL_INFO.googleMapsUrl}
                     target="_blank"
