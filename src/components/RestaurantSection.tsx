@@ -124,25 +124,14 @@ export const RestaurantSection: React.FC<RestaurantSectionProps> = ({
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/20 pointer-events-none" />
 
               {/* Top Status */}
-              <div className="absolute top-4 left-4 right-4 z-20 flex items-center justify-between">
-                <div className="bg-white/95 backdrop-blur-sm rounded-lg px-2.5 py-1 flex items-center gap-2 shadow-sm">
-                  <img
-                    src={HOTEL_INFO.logoUrl}
-                    alt=""
-                    className="h-6 w-auto object-contain"
-                  />
-                  <span className="text-[11px] font-bold text-[#0F3827]">
-                    Dining &amp; Bar
-                  </span>
-                </div>
-
-                {settings.isRestaurantHeroImageTemporary && (
+              {settings.isRestaurantHeroImageTemporary && (
+                <div className="absolute top-4 right-4 z-20">
                   <span className="bg-black/60 text-white/90 text-[10px] font-medium px-2 py-1 rounded flex items-center gap-1">
                     <ImageIcon className="w-3 h-3 text-[#C59B27]" />
                     <span>Illustrative Photo</span>
                   </span>
-                )}
-              </div>
+                </div>
+              )}
 
               {/* Caption */}
               <div className="absolute bottom-6 left-6 right-6 z-20 text-white space-y-1">

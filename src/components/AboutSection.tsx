@@ -42,23 +42,6 @@ export const AboutSection: React.FC = () => {
                     <span>Illustrative Photo</span>
                   </div>
                 )}
-
-                {/* Brand Seal on bottom of photo */}
-                <div className="absolute bottom-3 left-4 right-4 z-10 flex items-center gap-3">
-                  <img
-                    src={settings.logoUrl || HOTEL_INFO.logoUrl}
-                    alt="Official Logo"
-                    className="h-12 w-12 object-contain bg-white rounded-xl p-1 shadow-md shrink-0"
-                  />
-                  <div className="text-white">
-                    <h3 className="font-serif font-bold text-base leading-tight">
-                      D'Calabash Hotel
-                    </h3>
-                    <p className="text-[11px] text-[#C59B27] font-semibold">
-                      Oldest Congo Town Road, Monrovia
-                    </p>
-                  </div>
-                </div>
               </div>
 
               {/* Trust Details */}

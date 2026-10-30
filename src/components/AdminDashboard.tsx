@@ -658,28 +658,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
               <button
                 type="button"
                 onClick={onClose}
-                className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors"
+                className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
               >
                 Return to Public Website
               </button>
-            </div>
-
-            {/* Quick credentials helper banner */}
-            <div className="p-3 bg-amber-50/70 border border-amber-200/80 rounded-xl text-[11px] text-amber-900 space-y-1 mt-4">
-              <p className="font-semibold text-amber-950 flex items-center gap-1.5">
-                <Shield className="w-3.5 h-3.5 text-amber-700" />
-                <span>Authorized Administrative Credentials:</span>
-              </p>
-              <div className="grid grid-cols-2 gap-2 pt-1 font-mono text-[10px]">
-                <div className="bg-white/80 px-2 py-1 rounded border border-amber-200">
-                  <span className="text-slate-500">User: </span>
-                  <strong className="text-slate-900">dcalabash</strong>
-                </div>
-                <div className="bg-white/80 px-2 py-1 rounded border border-amber-200">
-                  <span className="text-slate-500">Pass: </span>
-                  <strong className="text-slate-900">dcalabash@2026</strong>
-                </div>
-              </div>
             </div>
           </form>
         </div>

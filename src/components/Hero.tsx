@@ -146,23 +146,6 @@ export const Hero: React.FC<HeroProps> = ({
                 {/* Scrim Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 pointer-events-none" />
 
-                {/* Official Logo Brand Overlay in Corner */}
-                <div className="absolute top-4 left-4 z-20 bg-white/95 backdrop-blur-md rounded-xl p-2 shadow-lg border border-white/40 flex items-center gap-2.5">
-                  <img
-                    src={HOTEL_INFO.logoUrl}
-                    alt="Official D'Calabash Hotel Logo"
-                    className="h-9 w-auto object-contain"
-                  />
-                  <div className="pr-1">
-                    <div className="font-serif text-xs font-bold text-[#0F3827] leading-none">
-                      D'Calabash
-                    </div>
-                    <div className="text-[9px] uppercase tracking-wider text-[#C59B27] font-bold">
-                      Monrovia, Liberia
-                    </div>
-                  </div>
-                </div>
-
                 {/* Temporary illustrative tag if applicable */}
                 {settings.isHeroImageTemporary && (
                   <div className="absolute top-4 right-4 z-20 bg-black/60 backdrop-blur-sm text-white/90 text-[10px] font-medium px-2 py-1 rounded flex items-center gap-1">
