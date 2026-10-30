@@ -42,6 +42,9 @@ export default function App() {
 
   // Check URL hash for direct admin routing (e.g. #admin or /admin)
   useEffect(() => {
+    // Hydrate persistent images and store data from IndexedDB
+    DCalabashStore.hydrateFromIndexedDb();
+
     const handleHash = () => {
       if (window.location.hash === '#admin') {
         setAdminOpen(true);

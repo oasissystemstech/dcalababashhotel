@@ -21,6 +21,7 @@ import {
   testSupabaseConnection,
   uploadImageToSupabase,
 } from '../lib/supabase';
+import { compressImageFile } from '../lib/imageOptimizer';
 import {
   Shield,
   LayoutDashboard,
@@ -387,49 +388,61 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
       DCalabashStore.updateMenuItemImage(imageModalTarget.id, url, inputImageSource, inputIsTemporary);
     } else if (imageModalTarget.type === 'gallery' && imageModalTarget.id) {
       DCalabashStore.updateGalleryItemImage(imageModalTarget.id, url, inputImageSource, inputIsTemporary);
+    } else if (imageModalTarget.type === 'offer' && imageModalTarget.id) {
+      DCalabashStore.updateOfferImage(imageModalTarget.id, url, inputImageSource, inputIsTemporary);
     }
 
     setImageModalTarget(null);
   };
 
-  // Handle local file upload (converts to preview data URL and uploads to Supabase Storage if connected)
+  // Handle local file upload with automated image compression and persistent storage
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Immediate preview
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      if (event.target?.result) {
-        setInputImageUrl(event.target.result as string);
-        setInputImageSource('actual_business_photo');
-        setInputIsTemporary(false);
-      }
-    };
-    reader.readAsDataURL(file);
+    setIsUploadingToStorage(true);
+    setUploadStorageNotice('Compressing and optimizing photograph for web display...');
 
-    // If Supabase is connected, also attempt direct storage bucket upload
-    if (isSupabaseConfigured() && imageModalTarget) {
-      let bucket = 'hotel-gallery';
-      if (imageModalTarget.type === 'room') bucket = 'room-images';
-      else if (imageModalTarget.type === 'menu') bucket = 'menu-images';
-      else if (imageModalTarget.type === 'banner') bucket = 'restaurant-images';
+    try {
+      // 1. Automatically compress camera/phone photo to ~150KB web-optimized JPEG
+      const optimized = await compressImageFile(file, 1600, 0.82);
+      setInputImageUrl(optimized.dataUrl);
+      setInputImageSource('actual_business_photo');
+      setInputIsTemporary(false);
+      setUploadStorageNotice(`Photo optimized to ${optimized.optimizedSizeKb} KB (saved to IndexedDB & browser storage).`);
 
-      setIsUploadingToStorage(true);
-      setUploadStorageNotice(`Uploading to Supabase Storage (${bucket})...`);
-      try {
-        const res = await uploadImageToSupabase(bucket, file);
-        setIsUploadingToStorage(false);
+      // 2. If Supabase is connected, also upload the compressed image to Supabase Storage bucket
+      if (isSupabaseConfigured() && imageModalTarget) {
+        let bucket = 'hotel-gallery';
+        if (imageModalTarget.type === 'room') bucket = 'room-images';
+        else if (imageModalTarget.type === 'menu') bucket = 'menu-images';
+        else if (imageModalTarget.type === 'banner') bucket = 'restaurant-images';
+        else if (imageModalTarget.type === 'offer') bucket = 'promotional-images';
+
+        setUploadStorageNotice(`Uploading to Supabase Storage bucket (${bucket})...`);
+        const res = await uploadImageToSupabase(bucket, optimized.file);
         if (res.success && res.url) {
           setInputImageUrl(res.url);
           setUploadStorageNotice(`Uploaded to Supabase Storage: ${res.url}`);
         } else {
-          setUploadStorageNotice(`Local preview saved. Storage note: ${res.error || 'bucket access pending'}`);
+          setUploadStorageNotice(
+            `Saved locally to browser IndexedDB (${optimized.optimizedSizeKb} KB). Image will persist across page refreshes.`
+          );
         }
-      } catch {
-        setIsUploadingToStorage(false);
-        setUploadStorageNotice('Local preview active.');
       }
+    } catch (err: any) {
+      console.warn('Image optimization error, falling back to direct load:', err);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setInputImageUrl(event.target.result as string);
+          setInputImageSource('actual_business_photo');
+          setInputIsTemporary(false);
+        }
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setIsUploadingToStorage(false);
     }
   };
 

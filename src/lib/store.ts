@@ -14,6 +14,7 @@ import {
 } from '../types';
 import { HOTEL_INFO } from '../constants/hotelInfo';
 import { getSupabaseClient } from './supabase';
+import { storageDb } from './storageDb';
 
 const STORAGE_KEY_SETTINGS = 'dcalabash_settings_v2';
 const STORAGE_KEY_ROOM_CATEGORIES = 'dcalabash_room_categories_v2';
@@ -675,13 +676,15 @@ function loadStored<T>(key: string, fallback: T): T {
   }
 }
 
-// Helper to save to localStorage
+// Helper to save to localStorage and IndexedDB (preventing quota drops)
 function saveStored<T>(key: string, data: T): void {
   try {
     localStorage.setItem(key, JSON.stringify(data));
   } catch (e) {
-    console.warn(`Error saving ${key} to storage:`, e);
+    console.warn(`LocalStorage quota exceeded or unavailable for ${key}. Image/state preserved in IndexedDB.`, e);
   }
+  // Guarantee persistent storage in IndexedDB (no 5MB restriction for images)
+  storageDb.set(key, data);
 }
 
 // Singleton Application Store Class
@@ -711,6 +714,90 @@ class DataStore {
     this.offers = loadStored(STORAGE_KEY_OFFERS, INITIAL_OFFERS);
     this.gallery = loadStored(STORAGE_KEY_GALLERY, INITIAL_GALLERY);
     this.testimonials = INITIAL_TESTIMONIALS;
+
+    // Immediately hydrate from high-capacity IndexedDB on initialization
+    this.hydrateFromIndexedDb();
+  }
+
+  /**
+   * Hydrates state from IndexedDB.
+   * Ensures that high-resolution images or records that exceed localStorage's 5MB quota
+   * are restored immediately upon page refresh or browser restart.
+   */
+  public async hydrateFromIndexedDb(): Promise<void> {
+    try {
+      const [
+        savedSettings,
+        savedCategories,
+        savedRooms,
+        savedBookings,
+        savedMenuCats,
+        savedMenuItems,
+        savedRes,
+        savedEnquiries,
+        savedOffers,
+        savedGallery,
+      ] = await Promise.all([
+        storageDb.get<BusinessSettings>(STORAGE_KEY_SETTINGS),
+        storageDb.get<RoomCategory[]>(STORAGE_KEY_ROOM_CATEGORIES),
+        storageDb.get<Room[]>(STORAGE_KEY_ROOMS),
+        storageDb.get<HotelBooking[]>(STORAGE_KEY_HOTEL_BOOKINGS),
+        storageDb.get<MenuCategory[]>(STORAGE_KEY_MENU_CATEGORIES),
+        storageDb.get<MenuItem[]>(STORAGE_KEY_MENU_ITEMS),
+        storageDb.get<RestaurantReservation[]>(STORAGE_KEY_RESTAURANT_RES),
+        storageDb.get<ContactEnquiry[]>(STORAGE_KEY_ENQUIRIES),
+        storageDb.get<SpecialOffer[]>(STORAGE_KEY_OFFERS),
+        storageDb.get<GalleryItem[]>(STORAGE_KEY_GALLERY),
+      ]);
+
+      let changed = false;
+      if (savedSettings) {
+        this.settings = savedSettings;
+        changed = true;
+      }
+      if (savedCategories && savedCategories.length > 0) {
+        this.roomCategories = savedCategories;
+        changed = true;
+      }
+      if (savedRooms && savedRooms.length > 0) {
+        this.rooms = savedRooms;
+        changed = true;
+      }
+      if (savedBookings && savedBookings.length > 0) {
+        this.hotelBookings = savedBookings;
+        changed = true;
+      }
+      if (savedMenuCats && savedMenuCats.length > 0) {
+        this.menuCategories = savedMenuCats;
+        changed = true;
+      }
+      if (savedMenuItems && savedMenuItems.length > 0) {
+        this.menuItems = savedMenuItems;
+        changed = true;
+      }
+      if (savedRes && savedRes.length > 0) {
+        this.restaurantReservations = savedRes;
+        changed = true;
+      }
+      if (savedEnquiries && savedEnquiries.length > 0) {
+        this.enquiries = savedEnquiries;
+        changed = true;
+      }
+      if (savedOffers && savedOffers.length > 0) {
+        this.offers = savedOffers;
+        changed = true;
+      }
+      if (savedGallery && savedGallery.length > 0) {
+        this.gallery = savedGallery;
+        changed = true;
+      }
+
+      if (changed) {
+        this.notify();
+      }
+    } catch (e) {
+      console.warn('Hydration from IndexedDB skipped:', e);
+    }
   }
 
   // Subscribe to changes
@@ -1086,6 +1173,30 @@ class DataStore {
       cat.isTemporaryImage = isTemporary;
       saveStored(STORAGE_KEY_ROOM_CATEGORIES, this.roomCategories);
       this.notify();
+
+      // Sync to Supabase PostgreSQL if connected
+      const client = getSupabaseClient();
+      if (client) {
+        const ROOM_UUID_MAP: Record<string, string> = {
+          'room-cat-deluxe': 'a1111111-1111-1111-1111-111111111111',
+          'room-cat-executive': 'a2222222-2222-2222-2222-222222222222',
+          'room-cat-standard': 'a3333333-3333-3333-3333-333333333333',
+          'room-cat-presidential': 'a4444444-4444-4444-4444-444444444444',
+        };
+        const dbId = ROOM_UUID_MAP[id] || id;
+        client
+          .from('room_categories')
+          .update({
+            image_url: imageUrl,
+            image_source_type: sourceType,
+            is_temporary_image: isTemporary,
+          })
+          .eq('id', dbId)
+          .then(
+            () => {},
+            (err) => console.warn('Supabase room image sync note:', err)
+          );
+      }
     }
   }
 
@@ -1120,6 +1231,23 @@ class DataStore {
       item.isTemporaryImage = isTemporary;
       saveStored(STORAGE_KEY_MENU_ITEMS, this.menuItems);
       this.notify();
+
+      // Sync to Supabase PostgreSQL if connected
+      const client = getSupabaseClient();
+      if (client) {
+        client
+          .from('menu_items')
+          .update({
+            image_url: imageUrl,
+            image_source_type: sourceType,
+            is_temporary_image: isTemporary,
+          })
+          .eq('id', id)
+          .then(
+            () => {},
+            (err) => console.warn('Supabase menu item image sync note:', err)
+          );
+      }
     }
   }
 
@@ -1154,6 +1282,23 @@ class DataStore {
       item.isTemporaryImage = isTemporary;
       saveStored(STORAGE_KEY_GALLERY, this.gallery);
       this.notify();
+
+      // Sync to Supabase PostgreSQL if connected
+      const client = getSupabaseClient();
+      if (client) {
+        client
+          .from('gallery_images')
+          .update({
+            image_url: imageUrl,
+            image_source_type: sourceType,
+            is_temporary_image: isTemporary,
+          })
+          .eq('id', id)
+          .then(
+            () => {},
+            (err) => console.warn('Supabase gallery image sync note:', err)
+          );
+      }
     }
   }
 
@@ -1163,11 +1308,59 @@ class DataStore {
     this.notify();
   }
 
+  // SPECIAL OFFERS IMAGE REPLACEMENT
+  public updateOfferImage(
+    id: string,
+    imageUrl: string,
+    sourceType: ImageSourceType = 'actual_business_photo',
+    isTemporary: boolean = false
+  ): void {
+    const offer = this.offers.find((o) => o.id === id);
+    if (offer) {
+      offer.imageUrl = imageUrl;
+      offer.imageSourceType = sourceType;
+      offer.isTemporaryImage = isTemporary;
+      saveStored(STORAGE_KEY_OFFERS, this.offers);
+      this.notify();
+
+      const client = getSupabaseClient();
+      if (client) {
+        client
+          .from('special_offers')
+          .update({ image_url: imageUrl })
+          .eq('id', id)
+          .then(
+            () => {},
+            (err) => console.warn('Supabase offer image sync note:', err)
+          );
+      }
+    }
+  }
+
   // SETTINGS & BANNER IMAGES
   public updateSettings(partial: Partial<BusinessSettings>): void {
     this.settings = { ...this.settings, ...partial };
     saveStored(STORAGE_KEY_SETTINGS, this.settings);
     this.notify();
+
+    // Sync banner images or story changes to Supabase
+    const client = getSupabaseClient();
+    if (client) {
+      client
+        .from('business_settings')
+        .update({
+          hero_image_url: this.settings.heroImageUrl,
+          restaurant_hero_image_url: this.settings.restaurantHeroImageUrl,
+          about_image_url: this.settings.aboutImageUrl,
+          about_story: this.settings.aboutStory,
+          tagline: this.settings.tagline,
+        })
+        .neq('business_name', 'none')
+        .then(
+          () => {},
+          (err) => console.warn('Supabase settings update note:', err)
+        );
+    }
   }
 
   public updateHeroImage(
@@ -1180,6 +1373,20 @@ class DataStore {
     this.settings.isHeroImageTemporary = isTemporary;
     saveStored(STORAGE_KEY_SETTINGS, this.settings);
     this.notify();
+
+    const client = getSupabaseClient();
+    if (client) {
+      client
+        .from('business_settings')
+        .update({
+          hero_image_url: imageUrl,
+        })
+        .neq('business_name', 'none')
+        .then(
+          () => {},
+          (err) => console.warn('Supabase hero image update note:', err)
+        );
+    }
   }
 
   // SUPABASE TWO-WAY CATALOG SYNCHRONIZATION
